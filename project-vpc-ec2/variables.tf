@@ -16,11 +16,11 @@ variable "pub_sub_avl_zone" {
 type =  string
 }
 
-varibale "cidr_block_pub_subnet1" {
+variable "cidr_block_pub_subnet1" {
 type = string
 }
 
-varibale "pub_sub1_avl_zone" {
+variable "pub_sub1_avl_zone" {
 type = string 
 }
 
