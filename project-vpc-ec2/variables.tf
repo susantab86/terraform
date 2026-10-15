@@ -92,6 +92,10 @@ variable "s3_bucket_name" {
 type = string
 }
 
+variable "s3_bucket_region" {
+type = string
+}
+
 variable "ec2_frst_instance_name" {
 type = string
 }
