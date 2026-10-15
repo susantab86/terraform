@@ -21,6 +21,7 @@ sg_egress_protocol  = "-1"
 sg_egress_cidr_block = ["0.0.0.0/0"]
 sg_tags_name = "Web-sg"
 s3_bucket_name = "terraform-s3-test-reya-project"
+s3_bucket_region = "ap-south-1"
 ec2_frst_instance_name = "ami-0d5beb611c244cba5"
 ec2_frst_instance_type = "t3.micro"
 ec2_scnd_instance_name = "ami-0d5beb611c244cba5"
