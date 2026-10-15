@@ -6,16 +6,16 @@ resource "aws_vpc" "myvpc" {
 #Creating Subnets
 resource "aws_subnet" "sub1" {
   vpc_id                  = aws_vpc.myvpc.id
-  cidr_block              = "192.168.1.0/24"
-  availability_zone       = "ap-south-1a"
-  map_public_ip_on_launch = true
+  cidr_block              = var.cidr_block_pub_subnet
+  availability_zone       = var.pub_sub_avl_zone
+  map_public_ip_on_launch = var.public_ip_on_launch_bool
 }
 
 resource "aws_subnet" "sub2" {
   vpc_id                  = aws_vpc.myvpc.id
-  cidr_block              = "192.168.2.0/24"
-  availability_zone       = "ap-south-1b"
-  map_public_ip_on_launch = true
+  cidr_block              = var.cidr_block_pub_subnet1
+  availability_zone       = var.pub_sub1_avl_zone
+  map_public_ip_on_launch = var.public_ip_on_launch_bool
 }
 
 #Creating Internet Gateway
@@ -28,7 +28,7 @@ resource "aws_route_table" "RT" {
   vpc_id = aws_vpc.myvpc.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = var.route_table_cidr_block
     gateway_id = aws_internet_gateway.igw.id
   }
 }
@@ -50,18 +50,18 @@ resource "aws_security_group" "webSg" {
   vpc_id = aws_vpc.myvpc.id
 
   ingress {
-    description = "HTTP from VPC"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = var.sg_ingress_desc
+    from_port   = var.sg_ingress_from_port
+    to_port     = var.sg_ingress_to_port
+    protocol    = var.sg_ingress_protocol
+    cidr_blocks = var.sg_ingress_cidr_block
   }
   ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = var.sg_ingress_one_desc
+    from_port   = var.sg_ingress_one_from_port
+    to_port     = var.sg_ingress_one_to_port
+    protocol    = var.sg_ingress_one_protocol
+    cidr_blocks = var.sg_ingress_one_cidr_block
   }
 
   egress {
