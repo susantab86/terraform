@@ -148,7 +148,3 @@ resource "aws_lb_listener" "listener" {
     type             = var.aws_lb_listnr_def_actn_type
   }
 }
-
-output "loadbalancerdns" {
-  value = aws_lb.myalb.dns_name
-}
