@@ -4,14 +4,14 @@ resource "aws_vpc" "myvpc" {
 }
 
 #Creating Subnets
-resource "aws_subnet" "sub1" {
+resource "aws_subnet" "public_subnet_1" {
   vpc_id                  = aws_vpc.myvpc.id
   cidr_block              = var.cidr_block_pub_subnet
   availability_zone       = var.pub_sub_avl_zone
   map_public_ip_on_launch = var.public_ip_on_launch_bool
 }
 
-resource "aws_subnet" "sub2" {
+resource "aws_subnet" "public_subnet_2" {
   vpc_id                  = aws_vpc.myvpc.id
   cidr_block              = var.cidr_block_pub_subnet1
   availability_zone       = var.pub_sub1_avl_zone
@@ -19,29 +19,29 @@ resource "aws_subnet" "sub2" {
 }
 
 #Creating Internet Gateway
-resource "aws_internet_gateway" "igw" {
+resource "aws_internet_gateway" "myvpc_igw" {
   vpc_id = aws_vpc.myvpc.id
 }
 
 #Creating Route Tables
-resource "aws_route_table" "RT" {
+resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.myvpc.id
 
   route {
     cidr_block = var.route_table_cidr_block
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.myvpc_igw.id
   }
 }
 
 #Creating Subnet Association
-resource "aws_route_table_association" "rta1" {
-  subnet_id      = aws_subnet.sub1.id
-  route_table_id = aws_route_table.RT.id
+resource "aws_route_table_association" "public_subnet_1_association" {
+  subnet_id      = aws_subnet.public_subnet_1.id
+  route_table_id = aws_route_table.public_route_table.id
 }
 
-resource "aws_route_table_association" "rta2" {
-  subnet_id      = aws_subnet.sub2.id
-  route_table_id = aws_route_table.RT.id
+resource "aws_route_table_association" "public_subnet_2_association" {
+  subnet_id      = aws_subnet.public_subnet_2.id
+  route_table_id = aws_route_table.public_route_table.id
 }
 
 #Creating Security Groups
@@ -77,7 +77,7 @@ resource "aws_security_group" "webSg" {
 }
 
 # Creating S3 Bucket
-resource "aws_s3_bucket" "example" {
+resource "aws_s3_bucket" "terraform_state_bucket" {
   bucket = var.s3_bucket_name
 }
 
@@ -86,7 +86,7 @@ resource "aws_instance" "webserver1" {
   ami                    = var.ec2_frst_instance_name
   instance_type          = var.ec2_frst_instance_type
   vpc_security_group_ids = [aws_security_group.webSg.id]
-  subnet_id              = aws_subnet.sub1.id
+  subnet_id              = aws_subnet.public_subnet_1.id
   user_data              = base64encode(file("userdata.sh"))
 }
 
@@ -94,7 +94,7 @@ resource "aws_instance" "webserver2" {
   ami                    = var.ec2_scnd_instance_name
   instance_type          = var.ec2_scnd_instance_type
   vpc_security_group_ids = [aws_security_group.webSg.id]
-  subnet_id              = aws_subnet.sub2.id
+  subnet_id              = aws_subnet.public_subnet_2.id
   user_data              = base64encode(file("userdata1.sh"))
 }
 
@@ -105,7 +105,7 @@ resource "aws_lb" "myalb" {
   load_balancer_type = var.myload_blncr_type
 
   security_groups = [aws_security_group.webSg.id]
-  subnets         = [aws_subnet.sub1.id, aws_subnet.sub2.id]
+  subnets         = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
 
   tags = {
     Name = var.myload_blncr_tags_name
@@ -113,7 +113,7 @@ resource "aws_lb" "myalb" {
 }
 
 # Creating Load Balancer
-resource "aws_lb_target_group" "tg" {
+resource "aws_lb_target_group" "web_target_group" {
   name     = var.tg_name
   port     = var.tg_port
   protocol = var.tg_protocol
@@ -127,13 +127,13 @@ resource "aws_lb_target_group" "tg" {
 
 # Attaching Load Balancer
 resource "aws_lb_target_group_attachment" "attach1" {
-  target_group_arn = aws_lb_target_group.tg.arn
+  target_group_arn = aws_lb_target_group.web_target_group.arn
   target_id        = aws_instance.webserver1.id
   port             = var.aws_lb_tg_attach_port
 }
 
 resource "aws_lb_target_group_attachment" "attach2" {
-  target_group_arn = aws_lb_target_group.tg.arn
+  target_group_arn = aws_lb_target_group.web_target_group.arn
   target_id        = aws_instance.webserver2.id
   port             = var.aws_lb_tg_attach_one_port
 }
@@ -144,7 +144,7 @@ resource "aws_lb_listener" "listener" {
   protocol          = var.aws_lb_listnr_protocol
 
   default_action {
-    target_group_arn = aws_lb_target_group.tg.arn
+    target_group_arn = aws_lb_target_group.web_target_group.arn
     type             = var.aws_lb_listnr_def_actn_type
   }
 }
