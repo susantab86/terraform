@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket       = var.s3_bucket_name
+    bucket       = "terraform-s3-test-susanta-project"
     key          = "dev/terraform.tfstate"
-    region       = var.s3_bucket_region
+    region       = "ap-south-1"
   }
 }
