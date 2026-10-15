@@ -65,34 +65,34 @@ resource "aws_security_group" "webSg" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = var.sg_egress_from_port
+    to_port     = var.sg_egress_to_port
+    protocol    = var.sg_egress_protocol
+    cidr_blocks = var.sg_egress_cidr_block
   }
 
   tags = {
-    Name = "Web-sg"
+    Name = var.sg_tags_name
   }
 }
 
 # Creating S3 Bucket
 resource "aws_s3_bucket" "example" {
-  bucket = "terraform-s3-test-reya-project"
+  bucket = var.s3_bucket_name
 }
 
 # Creating Ec2-instance with the VPC
 resource "aws_instance" "webserver1" {
-  ami                    = "ami-02b8269d5e85954ef"
-  instance_type          = "t3.micro"
+  ami                    = var.ec2_frst_instance_name
+  instance_type          = var.ec2_frst_instance_type
   vpc_security_group_ids = [aws_security_group.webSg.id]
   subnet_id              = aws_subnet.sub1.id
   user_data              = base64encode(file("userdata.sh"))
 }
 
 resource "aws_instance" "webserver2" {
-  ami                    = "ami-02b8269d5e85954ef"
-  instance_type          = "t3.micro"
+  ami                    = var.ec2_scnd_instance_name
+  instance_type          = var.ec2_scnd_instance_type
   vpc_security_group_ids = [aws_security_group.webSg.id]
   subnet_id              = aws_subnet.sub2.id
   user_data              = base64encode(file("userdata1.sh"))
@@ -100,28 +100,28 @@ resource "aws_instance" "webserver2" {
 
 #create alb
 resource "aws_lb" "myalb" {
-  name               = "myalb"
-  internal           = false
-  load_balancer_type = "application"
+  name               = var.myload_blncr_name
+  internal           = var.myload_blncr_internal
+  load_balancer_type = var.myload_blncr_type
 
   security_groups = [aws_security_group.webSg.id]
   subnets         = [aws_subnet.sub1.id, aws_subnet.sub2.id]
 
   tags = {
-    Name = "web"
+    Name = var.myload_blncr_tags_name
   }
 }
 
 # Creating Load Balancer
 resource "aws_lb_target_group" "tg" {
-  name     = "myTG"
-  port     = 80
-  protocol = "HTTP"
+  name     = var.tg_name
+  port     = var.tg_port
+  protocol = var.tg_protocol
   vpc_id   = aws_vpc.myvpc.id
 
   health_check {
-    path = "/"
-    port = "traffic-port"
+    path = var.tg_health_check_path
+    port = var.tg_health_check_port
   }
 }
 
@@ -129,23 +129,23 @@ resource "aws_lb_target_group" "tg" {
 resource "aws_lb_target_group_attachment" "attach1" {
   target_group_arn = aws_lb_target_group.tg.arn
   target_id        = aws_instance.webserver1.id
-  port             = 80
+  port             = var.aws_lb_tg_attach_port
 }
 
 resource "aws_lb_target_group_attachment" "attach2" {
   target_group_arn = aws_lb_target_group.tg.arn
   target_id        = aws_instance.webserver2.id
-  port             = 80
+  port             = var.aws_lb_tg_attach_one_port
 }
 
 resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_lb.myalb.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = var.aws_lb_listnr_port
+  protocol          = var.aws_lb_listnr_protocol
 
   default_action {
     target_group_arn = aws_lb_target_group.tg.arn
-    type             = "forward"
+    type             = var.aws_lb_listnr_def_actn_type
   }
 }
 
