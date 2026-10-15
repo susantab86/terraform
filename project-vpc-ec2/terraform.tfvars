@@ -1,1 +1,17 @@
 cidr = "192.168.0.0/16"
+cidr_block_pub_subnet = "192.168.1.0/24"
+pub_sub_avl_zone = "ap-south-1a"
+cidr_block_pub_subnet1 = "192.168.2.0/24"
+pub_sub1_avl_zone = "ap-south-1b"
+public_ip_on_launch_bool = true
+route_table_cidr_block = "0.0.0.0/0"
+sg_ingress_desc = "HTTP from VPC"
+sg_ingress_from_port = 80
+sg_ingress_to_port =  80
+sg_ingress_protocol = "tcp"
+sg_ingress_cidr_block = ["0.0.0.0/0"]
+sg_ingress_one_desc = "SSH"
+sg_ingress_one_from_port = 22
+sg_ingress_one_to_port =  22
+sg_ingress_one_protocol = "tcp"
+sg_ingress_one_cidr_block = ["0.0.0.0/0"]
